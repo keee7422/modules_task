@@ -1,0 +1,106 @@
+Creating modules in Terraform for Azure follows a similar pattern to other cloud providers. Below is a step-by-step guide to creating a simple Terraform module for provisioning an Azure resource. Let's assume we want to create an Azure Virtual Network using a module.
+
+1. Create the Terraform Module Structure:
+Organize your module in a separate directory within your Terraform project:
+
+plaintext
+Copy code
+my-terraform-repo/
+|-- azure-network-module/
+|   |-- main.tf
+|   |-- variables.tf
+|   |-- outputs.tf
+|-- main.tf
+|-- variables.tf
+|-- outputs.tf
+2. Define the Azure Network Module:
+azure-network-module/main.tf:
+hcl
+Copy code
+provider "azurerm" {
+  features = {}
+}
+
+resource "azurerm_virtual_network" "example" {
+  name                = var.network_name
+  address_space       = var.address_space
+  location            = var.location
+  resource_group_name = var.resource_group_name
+}
+
+resource "azurerm_subnet" "example" {
+  name                 = var.subnet_name
+  resource_group_name  = var.resource_group_name
+  virtual_network_name = azurerm_virtual_network.example.name
+  address_prefixes     = var.subnet_address_prefixes
+}
+azure-network-module/variables.tf:
+hcl
+Copy code
+variable "network_name" {
+  description = "Name of the Azure Virtual Network"
+}
+
+variable "address_space" {
+  description = "Address space for the Virtual Network"
+  type        = list(string)
+}
+
+variable "location" {
+  description = "Azure region for resources"
+}
+
+variable "resource_group_name" {
+  description = "Name of the Azure resource group"
+}
+
+variable "subnet_name" {
+  description = "Name of the Azure Subnet"
+}
+
+variable "subnet_address_prefixes" {
+  description = "Address prefixes for the Subnet"
+  type        = list(string)
+}
+azure-network-module/outputs.tf:
+hcl
+Copy code
+output "virtual_network_id" {
+  value = azurerm_virtual_network.example.id
+}
+
+output "subnet_id" {
+  value = azurerm_subnet.example.id
+}
+3. Use the Azure Network Module in the Root Configuration:
+main.tf:
+hcl
+Copy code
+module "network" {
+  source                  = "./azure-network-module"
+  network_name            = "example-network"
+  address_space           = ["10.0.0.0/16"]
+  location                = "East US"
+  resource_group_name     = "example-rg"
+  subnet_name             = "example-subnet"
+  subnet_address_prefixes = ["10.0.1.0/24"]
+}
+4. Initialize and Apply the Configuration:
+Run the following Terraform commands in your terminal:
+
+bash
+Copy code
+terraform init
+terraform apply -auto-approve
+5. Review the Outputs:
+After applying the configuration, you can access the outputs from the module:
+
+bash
+Copy code
+terraform output
+This basic example demonstrates how to create a Terraform module for an Azure Virtual Network. You can extend this pattern to create more complex modules for various Azure resources. Adjust the module's variables and resources based on your specific requirements.
+
+
+
+
+
